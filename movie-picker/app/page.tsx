@@ -2,14 +2,28 @@
 
 import { useEffect, useState } from "react";
 
+type Movie = {
+  id: number;
+  name: string;
+  image: {
+    medium: string;
+  } | null;
+  summary: string | null;
+  genres: string[];
+  rating: {
+    average: number | null;
+  };
+  premiered: string | null;
+};
+
 export default function Home() {
-  const [movies, setMovies] = useState<any[]>([]);
-  const [movie, setMovie] = useState<any>(null);
+  const [movies, setMovies] = useState<Movie[]>([]);
+  const [movie, setMovie] = useState<Movie | null>(null);
 
   useEffect(() => {
     fetch("https://api.tvmaze.com/shows")
       .then((res) => res.json())
-      .then((data) => {
+      .then((data: Movie[]) => {
         setMovies(data);
         setMovie(data[0]);
       });
@@ -30,17 +44,32 @@ export default function Home() {
 
           {movie && (
             <div>
+              {movie.image && (
+                <img
+                  src={movie.image.medium}
+                  alt={movie.name}
+                  className="mx-auto mb-4 rounded"
+                />
+              )}
+
               <h2 className="mb-2 text-xl font-semibold">{movie.name}</h2>
 
-              <img
-                src={movie.image?.medium}
-                alt={movie.name}
-                className="mx-auto mb-4 rounded"
-              />
+              <div className="mb-4 space-y-1 text-sm text-neutral-400">
+                <p>Rating: {movie.rating.average ?? "Not available"}</p>
+                <p>Premiered: {movie.premiered ?? "Not available"}</p>
+                <p>
+                  Genres:{" "}
+                  {movie.genres.length > 0
+                    ? movie.genres.join(", ")
+                    : "Not available"}
+                </p>
+              </div>
 
               <p
                 className="mb-6 text-sm text-neutral-300"
-                dangerouslySetInnerHTML={{ __html: movie.summary }}
+                dangerouslySetInnerHTML={{
+                  __html: movie.summary ?? "No summary available.",
+                }}
               />
 
               <button
