@@ -1,8 +1,11 @@
+import Link from "next/link";
+
 type Movie = {
   id: number;
   name: string;
   image: {
     medium: string;
+    original?: string;
   } | null;
   genres: string[];
   rating: {
@@ -19,9 +22,10 @@ export default function MoviesGrid({ movies }: MoviesGridProps) {
   return (
     <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
       {movies.map((movie) => (
-        <article
+        <Link
           key={movie.id}
-          className="overflow-hidden rounded-lg border border-neutral-700 bg-neutral-800"
+          href={`/movies/${movie.id}`}
+          className="overflow-hidden rounded-lg border border-neutral-700 bg-neutral-800 transition hover:-translate-y-1 hover:border-neutral-500"
         >
           {movie.image && (
             <img
@@ -46,7 +50,7 @@ export default function MoviesGrid({ movies }: MoviesGridProps) {
               {movie.genres.length > 0 ? movie.genres.join(", ") : "No genres"}
             </p>
           </div>
-        </article>
+        </Link>
       ))}
     </div>
   );
