@@ -1,5 +1,5 @@
 "use client";
-
+import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import FiltersPanel from "@/components/FiltersPanel";
 import MoviesGrid from "@/components/MoviesGrid";
@@ -73,7 +73,16 @@ export default function Home() {
   return (
     <main className="min-h-screen bg-neutral-900 px-6 py-10 text-white">
       <div className="mx-auto w-full max-w-6xl">
-        <h1 className="mb-8 text-center text-3xl font-bold">Movie Picker</h1>
+        <div className="mb-8 flex items-center justify-between">
+          <h1 className="text-3xl font-bold">Movie Picker</h1>
+
+          <Link
+            href="/saved"
+            className="text-sm text-neutral-400 hover:text-white"
+          >
+            Saved Movies
+          </Link>
+        </div>
 
         <FiltersPanel
           genre={genre}

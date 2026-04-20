@@ -1,4 +1,7 @@
+"use client";
+
 import Link from "next/link";
+import { useEffect, useState } from "react";
 
 type MoviePageProps = {
   params: Promise<{
@@ -23,14 +26,59 @@ type Movie = {
   status: string | null;
 };
 
-export default async function MovieDetailsPage({ params }: MoviePageProps) {
-  const { id } = await params;
+export default function MovieDetailsPage({ params }: MoviePageProps) {
+  const [movie, setMovie] = useState<Movie | null>(null);
+  const [isSaved, setIsSaved] = useState(false);
 
-  const res = await fetch(`https://api.tvmaze.com/shows/${id}`, {
-    cache: "no-store",
-  });
+  useEffect(() => {
+    async function loadMovie() {
+      const { id } = await params;
 
-  const movie: Movie = await res.json();
+      const res = await fetch(`https://api.tvmaze.com/shows/${id}`);
+      const data: Movie = await res.json();
+
+      setMovie(data);
+
+      const storedMovies = localStorage.getItem("saved-movies");
+      const savedMovies: Movie[] = storedMovies ? JSON.parse(storedMovies) : [];
+      const alreadySaved = savedMovies.some(
+        (savedMovie) => savedMovie.id === data.id,
+      );
+
+      setIsSaved(alreadySaved);
+    }
+
+    loadMovie();
+  }, [params]);
+
+  function toggleFavorite() {
+    if (!movie) return;
+
+    const storedMovies = localStorage.getItem("saved-movies");
+    const savedMovies: Movie[] = storedMovies ? JSON.parse(storedMovies) : [];
+
+    if (isSaved) {
+      const updatedMovies = savedMovies.filter(
+        (savedMovie) => savedMovie.id !== movie.id,
+      );
+
+      localStorage.setItem("saved-movies", JSON.stringify(updatedMovies));
+      setIsSaved(false);
+      return;
+    }
+
+    const updatedMovies = [...savedMovies, movie];
+    localStorage.setItem("saved-movies", JSON.stringify(updatedMovies));
+    setIsSaved(true);
+  }
+
+  if (!movie) {
+    return (
+      <main className="min-h-screen bg-neutral-900 px-6 py-10 text-white">
+        <p className="text-center text-neutral-400">Loading movie...</p>
+      </main>
+    );
+  }
 
   return (
     <main className="min-h-screen bg-neutral-900 px-6 py-10 text-white">
@@ -39,7 +87,7 @@ export default async function MovieDetailsPage({ params }: MoviePageProps) {
           href="/"
           className="mb-6 inline-block text-sm text-neutral-400 hover:text-white"
         >
-          ← Back To Movies
+          Back To Movies
         </Link>
 
         <div className="grid gap-8 md:grid-cols-[300px_1fr]">
@@ -68,6 +116,17 @@ export default async function MovieDetailsPage({ params }: MoviePageProps) {
                   : "No genres"}
               </p>
             </div>
+
+            <button
+              onClick={toggleFavorite}
+              className={`mb-6 rounded-lg px-4 py-2 transition ${
+                isSaved
+                  ? "border border-neutral-600 bg-transparent text-white hover:bg-neutral-800"
+                  : "bg-white text-black hover:bg-neutral-200"
+              }`}
+            >
+              {isSaved ? "Remove From Favorites" : "Save To Favorites"}
+            </button>
 
             <div
               className="prose prose-invert max-w-none text-neutral-200"
